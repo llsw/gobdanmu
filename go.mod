@@ -1,4 +1,4 @@
-module gobdanmu
+module github.com/llsw/gobdanmu
 
 go 1.20
 
