@@ -1,0 +1,5 @@
+# 房间号
+room: 7777
+# 浏览器获取cookie 打开 https://api.bilibili.com/x/web-interface/nav，
+# 打开控制台，复制网络请求中的cookie, 不能复制document.cookie
+cookie: ""
