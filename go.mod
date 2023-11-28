@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/Akegarasu/blivedm-go v1.5.1
 	github.com/cloudwego/hertz v0.7.2
+	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/spf13/viper v1.17.0
 )
 
@@ -30,6 +31,8 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
+	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
