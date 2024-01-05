@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .danmu {
+      position: absolute;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    function createDanmu(text, top) {
+      const danmu = document.createElement('div');
+      danmu.className = 'danmu';
+      danmu.style.top = `${top}px`;
+      danmu.textContent = text;
+      document.body.appendChild(danmu);
+
+      const duration = 5000; // Animation duration in milliseconds
+      danmu.animate([
+        { transform: 'translateX(100%)' },
+        { transform: 'translateX(-100%)' }
+      ], {
+        duration,
+        easing: 'linear',
+        iterations: 1
+      }).onfinish = () => {
+        danmu.remove();
+      };
+    }
+
+    // Example: Create a danmu
+    createDanmu('Hello, Danmu!', 50);
+  </script>
+</body>
+</html>
+

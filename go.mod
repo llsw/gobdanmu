@@ -6,6 +6,7 @@ require (
 	github.com/Akegarasu/blivedm-go v1.5.1
 	github.com/cloudwego/hertz v0.7.2
 	github.com/eclipse/paho.mqtt.golang v1.4.3
+	github.com/electricbubble/go-toast v0.3.0
 	github.com/spf13/viper v1.17.0
 )
 
