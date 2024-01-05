@@ -18,7 +18,7 @@ import (
 
 func Start() {
 	p := tea.NewProgram(initialModel())
-
+	listenMsg(p)
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -49,15 +49,10 @@ type model struct {
 	err         error
 }
 
-func listenMsg(m model) {
+func listenMsg(p *tea.Program) {
 	event.On(ON_DAN_MU, event.ListenerFunc(func(e event.Event) error {
 		if s, ok := e.Data()["data"]; ok {
-			dmsg := s.(*DanMuMsg)
-			from := fmt.Sprintf("%s: ", dmsg.From)
-			m.messages = append(m.messages, m.senderStyle.Render(from)+dmsg.Content)
-			m.viewport.SetContent(strings.Join(m.messages, "\n"))
-			m.textarea.Reset()
-			m.viewport.GotoBottom()
+			p.Send(s.(*DanMuMsg))
 			return nil
 		} else {
 			return fmt.Errorf("event:%s no data", ON_DAN_MU)
@@ -82,8 +77,7 @@ func initialModel() model {
 	ta.ShowLineNumbers = false
 
 	vp := viewport.New(30, 5)
-	vp.SetContent(`Welcome to the chat room!
-Type a message and press Enter to send.`)
+	vp.SetContent(`欢迎弹幕指导😁`)
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 	m := model{
@@ -93,7 +87,6 @@ Type a message and press Enter to send.`)
 		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
 		err:         nil,
 	}
-	listenMsg(m)
 	return m
 }
 
@@ -117,12 +110,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
 		case tea.KeyEnter:
-			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
+			m.messages = append(m.messages, m.senderStyle.Render("ikun: ")+m.textarea.Value())
 			m.viewport.SetContent(strings.Join(m.messages, "\n"))
 			m.textarea.Reset()
 			m.viewport.GotoBottom()
 		}
-
+	case *DanMuMsg:
+		dmsg := msg
+		from := fmt.Sprintf("%s: ", dmsg.From)
+		m.messages = append(m.messages, m.senderStyle.Render(from)+dmsg.Content)
+		m.viewport.SetContent(strings.Join(m.messages, "\n"))
+		m.textarea.Reset()
+		m.viewport.GotoBottom()
 	// We handle errors just like any other message
 	case errMsg:
 		m.err = msg
