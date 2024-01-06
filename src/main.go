@@ -5,8 +5,9 @@ import (
 	_ "github.com/Akegarasu/blivedm-go/utils"
 	log "github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/llsw/gobdanmu/src/msg"
-	// logr "github.com/sirupsen/logrus"
+	//	logr "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
 )
 
 func loadConfig() {
@@ -22,8 +23,15 @@ func loadConfig() {
 }
 
 func main() {
-	// logr.SetLevel(logr.DebugLevel)
+	// ogr.SetLevel(logr.DebugLevel)
 	loadConfig()
+	fileName := "/Users/xmk/git/go/gobdanmu/log.log"
+	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		log.Errorf("log file:%s creae error: ", fileName, err.Error())
+	} else {
+		log.SetOutput(f)
+	}
 	log.SetLevel(log.LevelDebug)
 	// 房间号
 	c := client.NewClient(viper.GetInt("room"))
@@ -54,7 +62,7 @@ func main() {
 	// 监听自定义事件
 	c.RegisterCustomEventHandler(msg.STOP_LIVE_ROOM_LIST, msg.GetEventHandler(msg.STOP_LIVE_ROOM_LIST))
 
-	err := c.Start()
+	err = c.Start()
 	if err != nil {
 		log.Fatal(err)
 	}

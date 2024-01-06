@@ -6,6 +6,7 @@ import (
 	log "github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/gookit/event"
 	"github.com/tidwall/gjson"
+	"runtime/debug"
 )
 
 const (
@@ -112,6 +113,11 @@ func DefaultHandler(eventName string) {
 // 欢迎进入直播间
 func OnWelcome() {
 	event.On(WELCOME, event.ListenerFunc(func(e event.Event) error {
+		defer func() {
+			if pan := recover(); pan != nil {
+				log.Errorf("handler packet error: %v\n%s", pan, debug.Stack())
+			}
+		}()
 		if s, ok := e.Data()["data"]; ok {
 			data := gjson.Get(s.(string), "data").String()
 			log.Infof("%s: %s\n", WELCOME, data)
@@ -125,16 +131,21 @@ func OnWelcome() {
 func OnInterActWord() {
 	eventName := INTERACT_WORD
 	event.On(eventName, event.ListenerFunc(func(e event.Event) error {
+		defer func() {
+			if pan := recover(); pan != nil {
+				log.Errorf("handler packet error: %v\n%s", pan, debug.Stack())
+			}
+		}()
 		if s, ok := e.Data()["data"]; ok {
-			data := gjson.Get(s.(string), "data.uinfo.base.name").String()
-			// log.Infof("%s: %s\n", eventName, data)
-			dmsg := NewDanMuMsg(
-				"[欢迎]",
-				fmt.Sprintf(" %s", data),
-				"进入直播间",
-				1,
-			)
-			event.MustFire(ON_DAN_MU, event.M{"data": dmsg})
+			data := gjson.Get(s.(string), "data").String()
+			log.Infof("%s: %s\n", eventName, data)
+			// dmsg := NewDanMuMsg(
+			// 	"[欢迎]",
+			// 	fmt.Sprintf(" %s", data),
+			// 	"进入直播间",
+			// 	1,
+			// )
+			// event.MustFire(ON_DAN_MU, event.M{"data": dmsg})
 			return nil
 		} else {
 			return fmt.Errorf("event:%s no data", eventName)
@@ -145,16 +156,21 @@ func OnInterActWord() {
 func OnEnterEffect() {
 	eventName := ENTRY_EFFECT
 	event.On(eventName, event.ListenerFunc(func(e event.Event) error {
+		defer func() {
+			if pan := recover(); pan != nil {
+				log.Errorf("handler packet error: %v\n%s", pan, debug.Stack())
+			}
+		}()
 		if s, ok := e.Data()["data"]; ok {
-			data := gjson.Get(s.(string), "data.uinfo.base.name").String()
-			// log.Infof("%s: %s\n", eventName, data)
-			dmsg := NewDanMuMsg(
-				"[欢迎]",
-				fmt.Sprintf(" %s", data),
-				"进入直播间",
-				1,
-			)
-			event.MustFire(ON_DAN_MU, event.M{"data": dmsg})
+			data := gjson.Get(s.(string), "data").String()
+			log.Infof("%s: %s\n", eventName, data)
+			// dmsg := NewDanMuMsg(
+			// 	"[欢迎]",
+			// 	fmt.Sprintf(" %s", data),
+			// 	"进入直播间",
+			// 	1,
+			// )
+			// event.MustFire(ON_DAN_MU, event.M{"data": dmsg})
 			return nil
 		} else {
 			return fmt.Errorf("event:%s no data", eventName)

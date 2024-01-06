@@ -5,15 +5,15 @@ package msg
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	// "github.com/cloudwego/hertz/pkg/common/hlog"
+	log "github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/gookit/event"
+	"runtime/debug"
 )
 
 const (
@@ -119,6 +119,12 @@ func (m model) useStyle(dmsg *DanMuMsg, tag, sender lipgloss.Style) string {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	defer func() {
+		if pan := recover(); pan != nil {
+			log.Errorf("handler packet error: %v\n%s", pan, debug.Stack())
+		}
+	}()
+
 	var (
 		tiCmd tea.Cmd
 		vpCmd tea.Cmd
@@ -152,7 +158,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case *DanMuMsg:
 		dmsg = msg
 		var renderStr string
-		if dmsg.Type == 1 {
+		if dmsg.Type == 1 && false {
 			renderStr = m.useStyle(dmsg, m.welcomeTagStyle, m.upTagStyle)
 		} else {
 			if dmsg.From == " 梯度上升" {
