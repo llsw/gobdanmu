@@ -41,6 +41,7 @@ type DanMuMsg struct {
 // 简单的情况就不要用opts模式了
 func NewDanMuMsg(tag, from, content string) *DanMuMsg {
 	return &DanMuMsg{
+		Tag:     tag,
 		From:    from,
 		Content: content,
 	}
@@ -132,7 +133,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			dmsg = NewDanMuMsg(
 				"[UP]",
-				"ikun",
+				" ikun ",
 				m.textarea.Value(),
 			)
 			m.messages = append(
@@ -146,10 +147,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case *DanMuMsg:
 		dmsg = msg
 		var renderStr string
-		if dmsg.From == "梯度上升" {
+		if dmsg.From == " 梯度上升" {
 			dmsg.Tag = "[UP大号]"
 			renderStr = m.useStyle(dmsg, m.upTagStyle, m.upStyle)
-		} else if dmsg.From == "我要买大房子" {
+		} else if dmsg.From == " 我要买大房子" {
 			dmsg.Tag = "[勇哥]"
 			renderStr = m.useStyle(dmsg, m.ygTagStyle, m.ygTagStyle)
 		} else {
