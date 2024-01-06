@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	HEADR = `欢迎弹弹幕指导☝️ 🤓`
+	HEADR = `欢迎弹幕指导☝️ 🤓`
 )
 
 func Start() {
@@ -79,7 +79,7 @@ func initialModel() model {
 	ta.Prompt = "┃ "
 	ta.CharLimit = 280
 
-	ta.SetWidth(30)
+	ta.SetWidth(280)
 	ta.SetHeight(1)
 
 	// Remove cursor line styling
@@ -87,7 +87,7 @@ func initialModel() model {
 
 	ta.ShowLineNumbers = false
 
-	vp := viewport.New(30, 5)
+	vp := viewport.New(280, 5)
 	// vp.SetContent(HEADR)
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
@@ -97,8 +97,8 @@ func initialModel() model {
 		viewport:       vp,
 		upStyle:        lipgloss.NewStyle().Foreground(lipgloss.Color("#FFD700")),
 		upTagStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
-		ygTagStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("#FF4500")),
-		ygStyle:        lipgloss.NewStyle().Foreground(lipgloss.Color("#90EE9E")),
+		ygStyle:        lipgloss.NewStyle().Foreground(lipgloss.Color("#FF4500")),
+		ygTagStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("#90EE9E")),
 		senderStyle:    lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF")),
 		senderTagStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#00FF00")),
 		err:            nil,
@@ -150,9 +150,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if dmsg.From == " 梯度上升" {
 			dmsg.Tag = "[UP大号]"
 			renderStr = m.useStyle(dmsg, m.upTagStyle, m.upStyle)
-		} else if dmsg.From == " 我要买大房子" {
+		} else if dmsg.From == " 要换大房子" {
 			dmsg.Tag = "[勇哥]"
-			renderStr = m.useStyle(dmsg, m.ygTagStyle, m.ygTagStyle)
+			renderStr = m.useStyle(dmsg, m.ygTagStyle, m.ygStyle)
 		} else {
 			renderStr = m.useStyle(dmsg, m.senderTagStyle, m.senderStyle)
 		}

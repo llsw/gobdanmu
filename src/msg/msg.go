@@ -11,6 +11,8 @@ import (
 const (
 	STOP_LIVE_ROOM_LIST = "STOP_LIVE_ROOM_LIST"
 	ON_DAN_MU           = "ON_DAN_MU"
+	WELCOME             = "WELCOME"
+	WELCOME_GUARD       = "WELCOME_GUARD"
 )
 
 // 弹幕事件
@@ -88,3 +90,12 @@ func DefaultHandler(eventName string) {
 		}
 	}))
 }
+
+// 弹幕事件
+// func OnWelcome(danmaku *message.Danmaku) {
+// 	dmsg := NewDanMuMsg(
+// 		"[弹幕表情]",
+// 		fmt.Sprintf(" %s", danmaku.Sender.Uname),
+// 		danmaku.Emoticon.Url,
+// 	)
+// }
