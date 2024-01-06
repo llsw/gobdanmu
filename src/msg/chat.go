@@ -16,6 +16,10 @@ import (
 	"github.com/gookit/event"
 )
 
+const (
+	HEADR = `欢迎弹弹幕指导☝️ 🤓`
+)
+
 func Start() {
 	p := tea.NewProgram(initialModel())
 	listenMsg(p)
@@ -62,14 +66,14 @@ func listenMsg(p *tea.Program) {
 
 func initialModel() model {
 	ta := textarea.New()
-	ta.Placeholder = "Send a message..."
+	ta.Placeholder = "send..."
 	ta.Focus()
 
 	ta.Prompt = "┃ "
 	ta.CharLimit = 280
 
 	ta.SetWidth(30)
-	ta.SetHeight(3)
+	ta.SetHeight(1)
 
 	// Remove cursor line styling
 	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
@@ -77,7 +81,7 @@ func initialModel() model {
 	ta.ShowLineNumbers = false
 
 	vp := viewport.New(30, 5)
-	vp.SetContent(`欢迎弹幕指导😁`)
+	// vp.SetContent(HEADR)
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 	m := model{
@@ -110,7 +114,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
 		case tea.KeyEnter:
-			m.messages = append(m.messages, m.senderStyle.Render("ikun: ")+m.textarea.Value())
+			m.messages = append(m.messages, m.senderStyle.Render("[up] ikun: ")+m.textarea.Value())
 			m.viewport.SetContent(strings.Join(m.messages, "\n"))
 			m.textarea.Reset()
 			m.viewport.GotoBottom()
@@ -133,7 +137,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	return fmt.Sprintf(
-		"%s\n\n%s",
+		"%s\n\n%s\n\n%s",
+		HEADR,
 		m.viewport.View(),
 		m.textarea.View(),
 	) + "\n\n"
