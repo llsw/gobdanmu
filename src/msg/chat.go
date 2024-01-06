@@ -36,28 +36,31 @@ type DanMuMsg struct {
 	Tag     string
 	From    string
 	Content string
+	Type    int
 }
 
 // 简单的情况就不要用opts模式了
-func NewDanMuMsg(tag, from, content string) *DanMuMsg {
+func NewDanMuMsg(tag, from, content string, dType int) *DanMuMsg {
 	return &DanMuMsg{
 		Tag:     tag,
 		From:    from,
 		Content: content,
+		Type:    dType,
 	}
 }
 
 type model struct {
-	viewport       viewport.Model
-	messages       []string
-	textarea       textarea.Model
-	upStyle        lipgloss.Style
-	upTagStyle     lipgloss.Style
-	ygStyle        lipgloss.Style
-	ygTagStyle     lipgloss.Style
-	senderStyle    lipgloss.Style
-	senderTagStyle lipgloss.Style
-	err            error
+	viewport        viewport.Model
+	messages        []string
+	textarea        textarea.Model
+	upStyle         lipgloss.Style
+	upTagStyle      lipgloss.Style
+	ygStyle         lipgloss.Style
+	ygTagStyle      lipgloss.Style
+	senderStyle     lipgloss.Style
+	senderTagStyle  lipgloss.Style
+	welcomeTagStyle lipgloss.Style
+	err             error
 }
 
 func listenMsg(p *tea.Program) {
@@ -92,16 +95,17 @@ func initialModel() model {
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 	m := model{
-		textarea:       ta,
-		messages:       []string{},
-		viewport:       vp,
-		upStyle:        lipgloss.NewStyle().Foreground(lipgloss.Color("#FFD700")),
-		upTagStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
-		ygStyle:        lipgloss.NewStyle().Foreground(lipgloss.Color("#FF4500")),
-		ygTagStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("#90EE9E")),
-		senderStyle:    lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF")),
-		senderTagStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#00FF00")),
-		err:            nil,
+		textarea:        ta,
+		messages:        []string{},
+		viewport:        vp,
+		upStyle:         lipgloss.NewStyle().Foreground(lipgloss.Color("#FFD700")),
+		upTagStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+		ygStyle:         lipgloss.NewStyle().Foreground(lipgloss.Color("#FF4500")),
+		ygTagStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("#90EE9E")),
+		senderStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF")),
+		senderTagStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color("#00FF00")),
+		welcomeTagStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#00FFFF	")),
+		err:             nil,
 	}
 	return m
 }
@@ -135,6 +139,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				"[UP]",
 				" ikun ",
 				m.textarea.Value(),
+				0,
 			)
 			m.messages = append(
 				m.messages,
@@ -147,14 +152,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case *DanMuMsg:
 		dmsg = msg
 		var renderStr string
-		if dmsg.From == " 梯度上升" {
-			dmsg.Tag = "[UP大号]"
-			renderStr = m.useStyle(dmsg, m.upTagStyle, m.upStyle)
-		} else if dmsg.From == " 要换大房子" {
-			dmsg.Tag = "[勇哥]"
-			renderStr = m.useStyle(dmsg, m.ygTagStyle, m.ygStyle)
+		if dmsg.Type == 1 {
+			renderStr = m.useStyle(dmsg, m.welcomeTagStyle, m.upTagStyle)
 		} else {
-			renderStr = m.useStyle(dmsg, m.senderTagStyle, m.senderStyle)
+			if dmsg.From == " 梯度上升" {
+				dmsg.Tag = "[UP大号]"
+				renderStr = m.useStyle(dmsg, m.upTagStyle, m.upStyle)
+			} else if dmsg.From == " 要换大房子" {
+				dmsg.Tag = "[勇哥]"
+				renderStr = m.useStyle(dmsg, m.ygTagStyle, m.ygStyle)
+			} else {
+				renderStr = m.useStyle(dmsg, m.senderTagStyle, m.senderStyle)
+			}
 		}
 		m.messages = append(
 			m.messages,

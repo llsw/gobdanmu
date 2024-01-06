@@ -5,6 +5,7 @@ import (
 	_ "github.com/Akegarasu/blivedm-go/utils"
 	log "github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/llsw/gobdanmu/src/msg"
+	// logr "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -21,6 +22,7 @@ func loadConfig() {
 }
 
 func main() {
+	// logr.SetLevel(logr.DebugLevel)
 	loadConfig()
 	log.SetLevel(log.LevelDebug)
 	// 房间号
@@ -37,6 +39,16 @@ func main() {
 	c.OnGift(msg.OnGift)
 	// 上舰事件
 	c.OnGuardBuy(msg.OnGuardBuy)
+	// 欢迎进入直播间
+	msg.OnWelcome()
+	c.RegisterCustomEventHandler(msg.WELCOME, msg.GetEventHandler(msg.WELCOME))
+	c.RegisterCustomEventHandler(msg.WELCOME_GUARD, msg.GetEventHandler(msg.WELCOME_GUARD))
+	//进入直播间
+	msg.OnInterActWord()
+	c.RegisterCustomEventHandler(msg.INTERACT_WORD, msg.GetEventHandler(msg.INTERACT_WORD))
+	//进入直播间
+	msg.OnEnterEffect()
+	c.RegisterCustomEventHandler(msg.ENTRY_EFFECT, msg.GetEventHandler(msg.ENTRY_EFFECT))
 	// 先设置个默认事件
 	msg.DefaultHandler(msg.STOP_LIVE_ROOM_LIST)
 	// 监听自定义事件
