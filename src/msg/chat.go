@@ -33,12 +33,13 @@ type (
 )
 
 type DanMuMsg struct {
+	Tag     string
 	From    string
 	Content string
 }
 
 // 简单的情况就不要用opts模式了
-func NewDanMuMsg(from, content string) *DanMuMsg {
+func NewDanMuMsg(tag, from, content string) *DanMuMsg {
 	return &DanMuMsg{
 		From:    from,
 		Content: content,
@@ -46,11 +47,16 @@ func NewDanMuMsg(from, content string) *DanMuMsg {
 }
 
 type model struct {
-	viewport    viewport.Model
-	messages    []string
-	textarea    textarea.Model
-	senderStyle lipgloss.Style
-	err         error
+	viewport       viewport.Model
+	messages       []string
+	textarea       textarea.Model
+	upStyle        lipgloss.Style
+	upTagStyle     lipgloss.Style
+	ygStyle        lipgloss.Style
+	ygTagStyle     lipgloss.Style
+	senderStyle    lipgloss.Style
+	senderTagStyle lipgloss.Style
+	err            error
 }
 
 func listenMsg(p *tea.Program) {
@@ -85,11 +91,16 @@ func initialModel() model {
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 	m := model{
-		textarea:    ta,
-		messages:    []string{},
-		viewport:    vp,
-		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
-		err:         nil,
+		textarea:       ta,
+		messages:       []string{},
+		viewport:       vp,
+		upStyle:        lipgloss.NewStyle().Foreground(lipgloss.Color("#FFD700")),
+		upTagStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+		ygTagStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("#FF4500")),
+		ygStyle:        lipgloss.NewStyle().Foreground(lipgloss.Color("#90EE9E")),
+		senderStyle:    lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF")),
+		senderTagStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#00FF00")),
+		err:            nil,
 	}
 	return m
 }
@@ -98,10 +109,15 @@ func (m model) Init() tea.Cmd {
 	return textarea.Blink
 }
 
+func (m model) useStyle(dmsg *DanMuMsg, tag, sender lipgloss.Style) string {
+	return tag.Render(dmsg.Tag) + sender.Render(dmsg.From) + ": " + dmsg.Content
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		tiCmd tea.Cmd
 		vpCmd tea.Cmd
+		dmsg  *DanMuMsg
 	)
 
 	m.textarea, tiCmd = m.textarea.Update(msg)
@@ -114,15 +130,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
 		case tea.KeyEnter:
-			m.messages = append(m.messages, m.senderStyle.Render("[up] ikun: ")+m.textarea.Value())
+			dmsg = NewDanMuMsg(
+				"[UP]",
+				"ikun",
+				m.textarea.Value(),
+			)
+			m.messages = append(
+				m.messages,
+				m.useStyle(dmsg, m.upTagStyle, m.upStyle),
+			)
 			m.viewport.SetContent(strings.Join(m.messages, "\n"))
 			m.textarea.Reset()
 			m.viewport.GotoBottom()
 		}
 	case *DanMuMsg:
-		dmsg := msg
-		from := fmt.Sprintf("%s: ", dmsg.From)
-		m.messages = append(m.messages, m.senderStyle.Render(from)+dmsg.Content)
+		dmsg = msg
+		var renderStr string
+		if dmsg.From == "梯度上升" {
+			dmsg.Tag = "[UP大号]"
+			renderStr = m.useStyle(dmsg, m.upTagStyle, m.upStyle)
+		} else if dmsg.From == "我要买大房子" {
+			dmsg.Tag = "[勇哥]"
+			renderStr = m.useStyle(dmsg, m.ygTagStyle, m.ygTagStyle)
+		} else {
+			renderStr = m.useStyle(dmsg, m.senderTagStyle, m.senderStyle)
+		}
+		m.messages = append(
+			m.messages,
+			renderStr,
+		)
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.textarea.Reset()
 		m.viewport.GotoBottom()

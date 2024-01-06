@@ -18,13 +18,15 @@ func OnDanmu(danmaku *message.Danmaku) {
 	var dmsg *DanMuMsg
 	if danmaku.Type == message.EmoticonDanmaku {
 		dmsg = NewDanMuMsg(
-			fmt.Sprintf("[弹幕表情] %s", danmaku.Sender.Uname),
+			"[弹幕表情]",
+			fmt.Sprintf(" %s", danmaku.Sender.Uname),
 			danmaku.Emoticon.Url,
 		)
 		// log.Infof("[弹幕表情] %s：表情URL： %s\n", danmaku.Sender.Uname, danmaku.Emoticon.Url)
 	} else {
 		dmsg = NewDanMuMsg(
-			fmt.Sprintf("[弹幕] %s", danmaku.Sender.Uname),
+			"[弹幕]",
+			fmt.Sprintf(" %s", danmaku.Sender.Uname),
 			danmaku.Content,
 		)
 		// log.Infof("[弹幕] %s：%s\n", danmaku.Sender.Uname, danmaku.Content)
@@ -41,7 +43,8 @@ func OnSuperChat(superChat *message.SuperChat) {
 func OnGift(gift *message.Gift) {
 	if gift.CoinType == "gold" {
 		dmsg := NewDanMuMsg(
-			fmt.Sprintf("[礼物] %s", gift.Uname),
+			"[礼物]",
+			fmt.Sprintf(" %s", gift.Uname),
 			fmt.Sprintf(
 				"%s %d 个 共%.2f元",
 				gift.GiftName, gift.Num,
@@ -56,7 +59,8 @@ func OnGift(gift *message.Gift) {
 // 上舰事件
 func OnGuardBuy(guardBuy *message.GuardBuy) {
 	dmsg := NewDanMuMsg(
-		fmt.Sprintf("[大航海] %s", guardBuy.Username),
+		"[大航海]",
+		fmt.Sprintf(" %s", guardBuy.Username),
 		fmt.Sprintf(
 			"开通了 %d 等级的大航海，金额 %d 元\n",
 			guardBuy.GuardLevel, guardBuy.Price/1000),
