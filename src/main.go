@@ -48,19 +48,13 @@ func main() {
 	// 上舰事件
 	c.OnGuardBuy(msg.OnGuardBuy)
 	// 欢迎进入直播间
-	msg.OnWelcome()
-	c.RegisterCustomEventHandler(msg.WELCOME, msg.GetEventHandler(msg.WELCOME))
-	c.RegisterCustomEventHandler(msg.WELCOME_GUARD, msg.GetEventHandler(msg.WELCOME_GUARD))
+	c.RegisterCustomEventHandler(msg.GetEventHandler(msg.WELCOME))
 	//进入直播间
-	msg.OnInterActWord()
-	c.RegisterCustomEventHandler(msg.INTERACT_WORD, msg.GetEventHandler(msg.INTERACT_WORD))
+	c.RegisterCustomEventHandler(msg.GetEventHandler(msg.INTERACT_WORD))
 	//进入直播间
-	msg.OnEnterEffect()
-	c.RegisterCustomEventHandler(msg.ENTRY_EFFECT, msg.GetEventHandler(msg.ENTRY_EFFECT))
-	// 先设置个默认事件
-	msg.DefaultHandler(msg.STOP_LIVE_ROOM_LIST)
+	c.RegisterCustomEventHandler(msg.GetEventHandler(msg.ENTRY_EFFECT))
 	// 监听自定义事件
-	c.RegisterCustomEventHandler(msg.STOP_LIVE_ROOM_LIST, msg.GetEventHandler(msg.STOP_LIVE_ROOM_LIST))
+	c.RegisterCustomEventHandler(msg.GetEventHandler(msg.STOP_LIVE_ROOM_LIST))
 
 	err = c.Start()
 	if err != nil {
