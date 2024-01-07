@@ -6,18 +6,28 @@ package msg
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"runtime/debug"
+
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	log "github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/gookit/event"
-	"runtime/debug"
 )
 
 const (
 	HEADR = `欢迎弹幕指导☝️ 🤓`
+)
+
+var (
+	spinnerStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("63"))
+	helpStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Margin(1, 0)
+	dotStyle      = helpStyle.Copy().UnsetMargins()
+	durationStyle = dotStyle.Copy()
+	appStyle      = lipgloss.NewStyle().Margin(1, 2, 0, 2)
 )
 
 func Start() {
@@ -49,10 +59,24 @@ func NewDanMuMsg(tag, from, content string, dType int) *DanMuMsg {
 	}
 }
 
+type resultMsg struct {
+	recvTime string
+	content  string
+}
+
+func (r resultMsg) String() string {
+	if r.recvTime == "" {
+		return dotStyle.Render(strings.Repeat(".", 30))
+	}
+	return fmt.Sprintf("%s %s", r.content,
+		durationStyle.Render(r.recvTime))
+}
+
 type model struct {
-	viewport        viewport.Model
-	messages        []string
+	spinner         spinner.Model
+	results         []resultMsg
 	textarea        textarea.Model
+	quitting        bool
 	upStyle         lipgloss.Style
 	upTagStyle      lipgloss.Style
 	ygStyle         lipgloss.Style
@@ -90,14 +114,17 @@ func initialModel() model {
 
 	ta.ShowLineNumbers = false
 
-	vp := viewport.New(280, 5)
-	// vp.SetContent(HEADR)
+	const numLastResults = 6
+	s := spinner.New()
+	s.Style = spinnerStyle
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 	m := model{
-		textarea:        ta,
-		messages:        []string{},
-		viewport:        vp,
+		spinner:  s,
+		results:  make([]resultMsg, numLastResults),
+		textarea: ta,
+		quitting: false,
+
 		upStyle:         lipgloss.NewStyle().Foreground(lipgloss.Color("#FFD700")),
 		upTagStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
 		ygStyle:         lipgloss.NewStyle().Foreground(lipgloss.Color("#FF4500")),
@@ -111,7 +138,14 @@ func initialModel() model {
 }
 
 func (m model) Init() tea.Cmd {
-	return textarea.Blink
+	return tea.Batch(m.spinner.Tick, textarea.Blink)
+}
+
+func now2RecvTime() string {
+	now := time.Now()
+	// year, mon, day := now.Date()
+	h, m, _ := now.Clock()
+	return fmt.Sprintf("%02d:%02d", h, m)
 }
 
 func (m model) useStyle(dmsg *DanMuMsg, tag, sender lipgloss.Style) string {
@@ -132,13 +166,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 
 	m.textarea, tiCmd = m.textarea.Update(msg)
-	m.viewport, vpCmd = m.viewport.Update(msg)
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
-			fmt.Println(m.textarea.Value())
+			m.quitting = true
 			return m, tea.Quit
 		case tea.KeyEnter:
 			dmsg = NewDanMuMsg(
@@ -147,14 +180,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textarea.Value(),
 				0,
 			)
-			m.messages = append(
-				m.messages,
-				m.useStyle(dmsg, m.upTagStyle, m.upStyle),
+			m.results = append(
+				m.results[1:],
+				resultMsg{
+					content:  m.useStyle(dmsg, m.upTagStyle, m.upStyle),
+					recvTime: now2RecvTime(),
+				},
 			)
-			m.viewport.SetContent(strings.Join(m.messages, "\n"))
 			m.textarea.Reset()
-			m.viewport.GotoBottom()
 		}
+	case resultMsg:
+		m.results = append(m.results[1:], msg)
+		return m, nil
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.spinner, cmd = m.spinner.Update(msg)
+		return m, cmd
 	case *DanMuMsg:
 		dmsg = msg
 		var renderStr string
@@ -171,14 +212,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				renderStr = m.useStyle(dmsg, m.senderTagStyle, m.senderStyle)
 			}
 		}
-		m.messages = append(
-			m.messages,
-			renderStr,
+		m.results = append(
+			m.results[1:],
+			resultMsg{
+				content:  renderStr,
+				recvTime: now2RecvTime(),
+			},
 		)
-		m.viewport.SetContent(strings.Join(m.messages, "\n"))
-		m.textarea.Reset()
-		m.viewport.GotoBottom()
-	// We handle errors just like any other message
+		// m.textarea.Reset()
+		// We handle errors just like any other message
 	case errMsg:
 		m.err = msg
 		return m, nil
@@ -187,11 +229,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(tiCmd, vpCmd)
 }
 
-func (m model) View() string {
+func (m model) ViewOld() string {
 	return fmt.Sprintf(
 		"%s\n\n%s\n\n%s",
 		HEADR,
-		m.viewport.View(),
+		"",
+		//m.viewport.View(),
 		m.textarea.View(),
 	) + "\n\n"
+}
+
+func (m model) View() string {
+	var s string
+
+	if m.quitting {
+		s += "Quit!"
+	} else {
+		s += m.spinner.View() + " " + HEADR
+	}
+
+	s += "\n\n"
+
+	for _, res := range m.results {
+		s += res.String() + "\n"
+	}
+
+	s += "\n" + m.textarea.View()
+
+	return appStyle.Render(s)
 }
